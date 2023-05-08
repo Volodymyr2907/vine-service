@@ -126,8 +126,6 @@ public class OrderServiceTest {
 
         assertThat(exception.getReason()).isEqualTo(
             String.format("Post office with id  %s not exist", postOfficeId));
-
-
     }
 
     @Test

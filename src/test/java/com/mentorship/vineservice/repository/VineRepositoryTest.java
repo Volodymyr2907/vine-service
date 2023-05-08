@@ -8,9 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.mentorship.vineservice.domain.Vine;
 import com.mentorship.vineservice.dto.enums.VineColor;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +29,6 @@ public class VineRepositoryTest {
     private Vine cabernetVine1;
     private Vine merlotVine2;
     private Vine merlotVine3;
-    private Map<Vine, Vine> vineMap;
     private List<Vine> defaultListOfVines;
 
 
@@ -54,14 +51,8 @@ public class VineRepositoryTest {
             merlotVine3
         );
 
-        vineMap = new HashMap<>();
 
-        defaultListOfVines.forEach(vineObject -> {
-
-            Vine createdVine = vineRepository.save(vineObject);
-
-            vineMap.put(vineObject, createdVine);
-        });
+        vineRepository.saveAll(defaultListOfVines);
 
     }
 
@@ -72,6 +63,10 @@ public class VineRepositoryTest {
         Vine vineToSave = createVineObject("CHARDONNAY_VINE", VineColor.RED, "Chardonnay", "SWEET");
 
         Vine createdVine = vineRepository.save(vineToSave);
+
+        var isVineExist = vineRepository.existsById(createdVine.getId());
+
+        assertThat(isVineExist).isTrue();
 
         Vine expectedVine = vineRepository.findById(createdVine.getId()).get();
 
@@ -99,7 +94,10 @@ public class VineRepositoryTest {
         List<Vine> listOfAllVines = vineRepository.findAll(searchParameters);
 
         assertThat(listOfAllVines).hasSize(1);
-        assertThat(listOfAllVines).containsExactlyInAnyOrder(vineMap.get(merlotVine1));
+        assertThat(listOfAllVines)
+            .usingRecursiveComparison()
+            .ignoringFields("id")
+            .isEqualTo(List.of(merlotVine1));
 
     }
 
@@ -114,7 +112,11 @@ public class VineRepositoryTest {
         List<Vine> listOfAllVines = vineRepository.findAll(searchParameters);
 
         assertThat(listOfAllVines).hasSize(2);
-        assertThat(listOfAllVines).containsExactlyInAnyOrder(vineMap.get(merlotVine1), vineMap.get(merlotVine2));
+        assertThat(listOfAllVines)
+            .usingRecursiveComparison()
+            .ignoringFields("id")
+            .ignoringCollectionOrder()
+            .isEqualTo(List.of(merlotVine1, merlotVine2));
     }
 
     @Test
@@ -129,7 +131,10 @@ public class VineRepositoryTest {
         List<Vine> listOfAllVines = vineRepository.findAll(searchParameters);
 
         assertThat(listOfAllVines).hasSize(1);
-        assertThat(listOfAllVines).containsOnly(vineMap.get(merlotVine3));
+        assertThat(listOfAllVines)
+            .usingRecursiveComparison()
+            .ignoringFields("id")
+            .isEqualTo(List.of(merlotVine3));
     }
 
     @Test
