@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,5 +48,12 @@ public class Order extends BaseEntity {
         OrderVine orderVine = new OrderVine(this, vine, vineAmount);
         vines.add(orderVine);
         vine.getOrders().add(orderVine);
+    }
+
+    @PrePersist
+    public void sumOrder() {
+        sum = vines.stream()
+            .mapToDouble(vine -> vine.getVine().getPrice() * vine.getVineAmount()
+        ).sum();
     }
 }
